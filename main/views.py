@@ -9,5 +9,10 @@ def home(request):
 def about(request):
     return render(request, "about.html", {})
 
-def product(request):
-    return render(request, "product.html", {})
+def product_detail(request,id):
+    product = Product.objects.get(id=id)
+    return render(request, "product_detail.html", {'product':product})
+
+def products(request):
+    products = Product.objects.all()
+    return render(request, "products.html", {"products":products})

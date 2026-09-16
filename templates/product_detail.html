@@ -1,135 +1,267 @@
 {% extends "layout.html" %}
+{% load static %}
+
 {% block content %}
-<!-- Product section-->
+
+<style>
+    /* Display Area */
+    .canvas-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 480px;
+        width: 100%;
+    }
+
+    #artworkCanvas {
+        max-width: 100%;
+        max-height: 480px;
+        width: auto;
+        height: auto;
+        box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.15);
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    /* Frame Selection Cards */
+    .frame-thumb-card {
+        cursor: pointer;
+        border: 2px solid #dee2e6;
+        transition: all 0.2s ease-in-out;
+    }
+    .frame-thumb-card:hover {
+        border-color: #6c757d;
+        transform: translateY(-2px);
+    }
+    .frame-thumb-card.active-frame {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0.25rem 0.5rem rgba(13, 110, 253, 0.2);
+    }
+    .frame-thumb-preview {
+        height: 80px;
+        width: 100%;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .frame-thumb-preview img.thumb-frame-only {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+    }
+</style>
+
 <section class="py-5">
-    <div class="container px-4 px-lg-5 my-5">
+    <div class="container px-4 px-lg-5 my-4">
         <div class="row gx-4 gx-lg-5 align-items-center">
-            <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0"
-                    src="{{ product.image.url }}" alt="..." /></div>
+            
+            <!-- Main Canvas Preview -->
+            <div class="col-md-6 mb-5 mb-md-0 text-center">
+                <div class="canvas-container">
+                    <canvas id="artworkCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Product Details & Frame Options -->
             <div class="col-md-6">
                 <h1 class="display-5 fw-bolder">{{ product.name }}</h1>
-                <div class="fs-5 mb-5">
+                <div class="fs-4 mb-3">
                     <span>${{ product.price }}</span>
                 </div>
-                <p class="lead">{{ product.description }}</p>
-                <div class="d-flex">
-                    <!-- <input class="form-control text-center me-3" id="inputQuantity" type="num" value="1"
-                        style="max-width: 3rem" /> -->
-                    <button class="btn btn-outline-dark flex-shrink-0" type="button">
-                        <i class="bi-cart-fill me-1"></i>
-                        Add to cart
-                    </button>
+                <p class="lead mb-4">{{ product.description }}</p>
+
+                <div class="mb-3">
+                    <h5 class="fw-bold mb-1">Frame Selection</h5>
+                    <small class="text-muted">Selected: <strong id="selectedFrameName">No Frame</strong></small>
                 </div>
+
+                <div class="row row-cols-2 row-cols-sm-4 g-2 mb-4">
+                    
+                    <!-- No Frame Option -->
+                    <div class="col">
+                        <div id="noFrameCard" class="card h-100 frame-thumb-card active-frame text-center p-2" 
+                             onclick="applyFrame('', 'No Frame (Canvas Only)', this)">
+                            <div class="frame-thumb-preview rounded bg-light">
+                                <span class="text-muted fw-bold small">No Frame</span>
+                            </div>
+                            <small class="fw-bold mt-2 d-block text-truncate">Canvas Only</small>
+                        </div>
+                    </div>
+
+                    <!-- Frame 1 Option (Horizontal) -->
+                    <div class="col frame-option horizontal-frame d-none">
+                        <div class="card h-100 frame-thumb-card text-center p-2" 
+                             onclick="applyFrame('{% static 'frames/test_frame_horizontal.png' %}', 'Frame Style 1 (Horizontal)', this)">
+                            <div class="frame-thumb-preview rounded">
+                                <img class="thumb-frame-only" src="{% static 'frames/test_frame_horizontal.png' %}" alt="Frame Style 1" />
+                            </div>
+                            <small class="fw-bold mt-2 d-block text-truncate">Frame Style 1</small>
+                        </div>
+                    </div>
+
+                    <!-- Frame 1 Option (Vertical) -->
+                    <div class="col frame-option vertical-frame d-none">
+                        <div class="card h-100 frame-thumb-card text-center p-2" 
+                             onclick="applyFrame('{% static 'frames/test_frame_vertical.png' %}', 'Frame Style 1 (Vertical)', this)">
+                            <div class="frame-thumb-preview rounded">
+                                <img class="thumb-frame-only" src="{% static 'frames/test_frame_vertical.png' %}" alt="Frame Style 1" />
+                            </div>
+                            <small class="fw-bold mt-2 d-block text-truncate">Frame Style 1</small>
+                        </div>
+                    </div>
+
+                    <!-- Frame 2 Option (Horizontal) -->
+                    <div class="col frame-option horizontal-frame d-none">
+                        <div class="card h-100 frame-thumb-card text-center p-2" 
+                             onclick="applyFrame('{% static 'frames/test_frame1_horizontal.png' %}', 'Frame Style 2 (Horizontal)', this)">
+                            <div class="frame-thumb-preview rounded">
+                                <img class="thumb-frame-only" src="{% static 'frames/test_frame1_horizontal.png' %}" alt="Frame Style 2" />
+                            </div>
+                            <small class="fw-bold mt-2 d-block text-truncate">Frame Style 2</small>
+                        </div>
+                    </div>
+
+                    <!-- Frame 2 Option (Vertical) -->
+                    <div class="col frame-option vertical-frame d-none">
+                        <div class="card h-100 frame-thumb-card text-center p-2" 
+                             onclick="applyFrame('{% static 'frames/test_frame1_vertical.png' %}', 'Frame Style 2 (Vertical)', this)">
+                            <div class="frame-thumb-preview rounded">
+                                <img class="thumb-frame-only" src="{% static 'frames/test_frame1_vertical.png' %}" alt="Frame Style 2" />
+                            </div>
+                            <small class="fw-bold mt-2 d-block text-truncate">Frame Style 2</small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button class="btn btn-dark btn-lg w-100" type="button">
+                    <i class="bi-cart-fill me-1"></i> Add to cart
+                </button>
+
             </div>
         </div>
     </div>
 </section>
-<!-- Related items section-->
-<section class="py-5 bg-light">
-    <div class="container px-4 px-lg-5 mt-5">
-        <h2 class="fw-bolder mb-4">Related products</h2>
-        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-            <div class="col mb-5">
-                <div class="card h-100">
-                    <!-- Product image-->
-                    <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                    <!-- Product details-->
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <!-- Product name-->
-                            <h5 class="fw-bolder">Fancy Product</h5>
-                            <!-- Product price-->
-                            $40.00 - $80.00
-                        </div>
-                    </div>
-                    <!-- Product actions-->
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">View options</a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col mb-5">
-                <div class="card h-100">
-                    <!-- Sale badge-->
-                    <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale
-                    </div>
-                    <!-- Product image-->
-                    <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                    <!-- Product details-->
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <!-- Product name-->
-                            <h5 class="fw-bolder">Special Item</h5>
-                            <!-- Product reviews-->
-                            <div class="d-flex justify-content-center small text-warning mb-2">
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                            </div>
-                            <!-- Product price-->
-                            <span class="text-muted text-decoration-line-through">$20.00</span>
-                            $18.00
-                        </div>
-                    </div>
-                    <!-- Product actions-->
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col mb-5">
-                <div class="card h-100">
-                    <!-- Sale badge-->
-                    <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale
-                    </div>
-                    <!-- Product image-->
-                    <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                    <!-- Product details-->
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <!-- Product name-->
-                            <h5 class="fw-bolder">Sale Item</h5>
-                            <!-- Product price-->
-                            <span class="text-muted text-decoration-line-through">$50.00</span>
-                            $25.00
-                        </div>
-                    </div>
-                    <!-- Product actions-->
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col mb-5">
-                <div class="card h-100">
-                    <!-- Product image-->
-                    <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                    <!-- Product details-->
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <!-- Product name-->
-                            <h5 class="fw-bolder">Popular Item</h5>
-                            <!-- Product reviews-->
-                            <div class="d-flex justify-content-center small text-warning mb-2">
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                            </div>
-                            <!-- Product price-->
-                            $40.00
-                        </div>
-                    </div>
-                    <!-- Product actions-->
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+
+<script>
+    const artworkUrl = "{{ product.image.url }}";
+    const canvas = document.getElementById('artworkCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let loadedArtwork = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadedArtwork = new Image();
+        loadedArtwork.crossOrigin = "anonymous";
+        loadedArtwork.src = artworkUrl;
+
+        loadedArtwork.onload = function () {
+            // Show horizontal or vertical frames according to image aspect ratio
+            const isHorizontal = loadedArtwork.naturalWidth >= loadedArtwork.naturalHeight;
+
+            if (isHorizontal) {
+                document.querySelectorAll('.horizontal-frame').forEach(el => el.classList.remove('d-none'));
+                document.querySelectorAll('.vertical-frame').forEach(el => el.classList.add('d-none'));
+            } else {
+                document.querySelectorAll('.vertical-frame').forEach(el => el.classList.remove('d-none'));
+                document.querySelectorAll('.horizontal-frame').forEach(el => el.classList.add('d-none'));
+            }
+
+            applyFrame('', 'No Frame (Canvas Only)', document.getElementById('noFrameCard'));
+        };
+    });
+
+    function applyFrame(frameUrl, frameTitle, cardElement) {
+        document.getElementById('selectedFrameName').textContent = frameTitle;
+
+        document.querySelectorAll('.frame-thumb-card').forEach(card => card.classList.remove('active-frame'));
+        if (cardElement) cardElement.classList.add('active-frame');
+
+        if (!frameUrl) {
+            canvas.width = loadedArtwork.naturalWidth;
+            canvas.height = loadedArtwork.naturalHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(loadedArtwork, 0, 0);
+        } else {
+            const frameImg = new Image();
+            frameImg.crossOrigin = "anonymous";
+            frameImg.src = frameUrl;
+
+            frameImg.onload = function () {
+                canvas.width = frameImg.naturalWidth;
+                canvas.height = frameImg.naturalHeight;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Detect the transparent hole inside the frame PNG
+                const hole = detectInnerCutout(frameImg);
+
+                // Overlap Bleed: push the artwork edges 12 pixels UNDER the inner border lip
+                const bleed = 12;
+                const targetX = Math.max(0, hole.x - bleed);
+                const targetY = Math.max(0, hole.y - bleed);
+                const targetW = hole.width + (bleed * 2);
+                const targetH = hole.height + (bleed * 2);
+
+                // 1. Draw the artwork filled into the expanded hole
+                ctx.drawImage(
+                    loadedArtwork, 
+                    0, 0, loadedArtwork.naturalWidth, loadedArtwork.naturalHeight,
+                    targetX, targetY, targetW, targetH
+                );
+
+                // 2. Overlay the frame PNG over top of the artwork
+                ctx.drawImage(frameImg, 0, 0);
+            };
+        }
+    }
+
+    function detectInnerCutout(frameImg) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = frameImg.naturalWidth;
+        tempCanvas.height = frameImg.naturalHeight;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(frameImg, 0, 0);
+
+        const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        const data = imgData.data;
+        const width = tempCanvas.width;
+        const height = tempCanvas.height;
+
+        let minX = width, minY = height, maxX = 0, maxY = 0;
+        let found = false;
+
+        // Find pixels that are nearly transparent (cutout region)
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const alpha = data[(y * width + x) * 4 + 3];
+                if (alpha < 128) { 
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                    found = true;
+                }
+            }
+        }
+
+        if (!found) {
+            return {
+                x: Math.round(width * 0.08),
+                y: Math.round(height * 0.08),
+                width: Math.round(width * 0.84),
+                height: Math.round(height * 0.84)
+            };
+        }
+
+        return {
+            x: minX,
+            y: minY,
+            width: (maxX - minX + 1),
+            height: (maxY - minY + 1)
+        };
+    }
+</script>
+
 {% endblock %}
